@@ -265,7 +265,6 @@
     let exhaleLeft = 0;
     let alertActive = false;
     let alertInterval = null;
-    let windowAcknowledged = false;
     const windowDuration = 1500;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -389,7 +388,6 @@
       phase = "window";
       inhaleLeft = 0;
       exhaleLeft = 0;
-      windowAcknowledged = false;
       setPhaseLabel("Окно клика");
       statusText.textContent = "Окно клика";
       updateCountdown();
@@ -405,7 +403,7 @@
       }
 
       windowTimeout = setTimeout(() => {
-        if (!alertActive && !windowAcknowledged) {
+        if (!alertActive) {
           startAlert();
         }
       }, windowDuration);
@@ -459,16 +457,12 @@
     circle.addEventListener("contextmenu", (event) => {
       event.preventDefault();
       ensureAudio();
-      windowAcknowledged = true;
+      if (phase !== "window") {
+        return;
+      }
       stopAlert();
       clearTimers();
-      if (!running) {
-        running = true;
-        cyclesLeft = parseInt(cycleInput.value, 10) || 10;
-        cycleRemaining.textContent = cyclesLeft;
-        startButton.textContent = "Reset";
-      }
-      circle.style.transitionDuration = "0.3s";
+      circle.style.transitionDuration = "0.4s";
       circle.style.transform = "scale(0.6)";
       statusText.textContent = "Синхронизация";
       timers.push(setTimeout(startInhale, 250));
@@ -476,12 +470,6 @@
 
     circle.addEventListener("click", () => {
       ensureAudio();
-      if (phase === "window") {
-        windowAcknowledged = true;
-        stopAlert();
-        statusText.textContent = "Клик подтверждён";
-        return;
-      }
       if (alertActive) {
         stopAlert();
         statusText.textContent = "Возврат подтверждён";
