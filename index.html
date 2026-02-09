@@ -459,13 +459,16 @@
     circle.addEventListener("contextmenu", (event) => {
       event.preventDefault();
       ensureAudio();
-      if (phase !== "window") {
-        return;
-      }
       windowAcknowledged = true;
       stopAlert();
       clearTimers();
-      circle.style.transitionDuration = "0.4s";
+      if (!running) {
+        running = true;
+        cyclesLeft = parseInt(cycleInput.value, 10) || 10;
+        cycleRemaining.textContent = cyclesLeft;
+        startButton.textContent = "Reset";
+      }
+      circle.style.transitionDuration = "0.3s";
       circle.style.transform = "scale(0.6)";
       statusText.textContent = "Синхронизация";
       timers.push(setTimeout(startInhale, 250));
