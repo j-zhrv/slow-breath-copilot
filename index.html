@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Slow Breath Copilot</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f1115;
+      --panel: #1c2028;
+      --text: #e6e8ee;
+      --accent: #6bc2ff;
+      --muted: #9aa3b2;
+      --danger: #ff6b6b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, #1b202a, var(--bg));
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 24px;
+    }
+
+    .breath-circle {
+      width: 50vmin;
+      height: 50vmin;
+      min-width: 220px;
+      min-height: 220px;
+      max-width: 520px;
+      max-height: 520px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #7bd6ff, #3e7bd8);
+      box-shadow: 0 25px 60px rgba(35, 126, 255, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transform: scale(0.6);
+      transition: transform 4s linear;
+      position: relative;
+      outline: none;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .breath-circle:focus-visible {
+      box-shadow: 0 0 0 4px rgba(107, 194, 255, 0.4);
+    }
+
+    .circle-label {
+      font-size: clamp(1rem, 2.2vmin, 1.5rem);
+      color: rgba(255, 255, 255, 0.85);
+      text-align: center;
+      padding: 12px;
+    }
+
+    .panel {
+      width: min(720px, 100%);
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    input[type="number"],
+    input[type="range"] {
+      width: 100%;
+    }
+
+    input[type="number"] {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #2b3240;
+      background: #11151c;
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    input[type="range"] {
+      accent-color: var(--accent);
+    }
+
+    .range-value {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    button {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      background: var(--accent);
+      color: #0a1020;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(107, 194, 255, 0.2);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .indicators {
+      display: grid;
+      gap: 8px;
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .indicator {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .indicator span {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .alert {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .toggle {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .instructions {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div
+    id="breathCircle"
+    class="breath-circle"
+    role="button"
+    tabindex="0"
+    aria-label="Круг дыхания: правый клик для синхронизации, левый для подтверждения присутствия"
+  >
+    <div class="circle-label" id="phaseLabel">Готовы начать</div>
+  </div>
+
+  <section class="panel" aria-live="polite">
+    <div class="controls">
+      <label>
+        Секунды вдоха
+        <input id="inhaleInput" type="number" min="2" max="20" step="1" value="4" />
+      </label>
+      <label>
+        Секунды выдоха
+        <input id="exhaleInput" type="number" min="2" max="20" step="1" value="7" />
+      </label>
+      <label>
+        Кол-во циклов: <span class="range-value" id="cycleValue">10</span>
+        <input id="cycleInput" type="range" min="5" max="30" step="5" value="10" />
+      </label>
+      <div>
+        <button id="startButton" type="button">Start</button>
+      </div>
+    </div>
+
+    <div class="indicators">
+      <div class="indicator">
+        <strong>Вдох: осталось</strong>
+        <span id="inhaleRemaining">— сек</span>
+      </div>
+      <div class="indicator">
+        <strong>Выдох: осталось</strong>
+        <span id="exhaleRemaining">— сек</span>
+      </div>
+      <div class="indicator">
+        <strong>Осталось циклов</strong>
+        <span id="cycleRemaining">—</span>
+      </div>
+      <div class="indicator">
+        <strong>Статус</strong>
+        <span id="statusText">Ожидание старта</span>
+      </div>
+    </div>
+
+    <div class="toggle">
+      <input id="soundToggle" type="checkbox" checked />
+      <label for="soundToggle">Звук напоминания</label>
+    </div>
+
+    <div class="instructions">
+      Кликайте по кругу только в «окнах» между фазами. Правый клик синхронизирует цикл и
+      запускает вдох заново. Левый клик отключает тревогу, если вы отвлеклись.
+    </div>
+  </section>
+
+  <script>
+    const circle = document.getElementById("breathCircle");
+    const phaseLabel = document.getElementById("phaseLabel");
+    const inhaleInput = document.getElementById("inhaleInput");
+    const exhaleInput = document.getElementById("exhaleInput");
+    const cycleInput = document.getElementById("cycleInput");
+    const cycleValue = document.getElementById("cycleValue");
+    const startButton = document.getElementById("startButton");
+    const inhaleRemaining = document.getElementById("inhaleRemaining");
+    const exhaleRemaining = document.getElementById("exhaleRemaining");
+    const cycleRemaining = document.getElementById("cycleRemaining");
+    const statusText = document.getElementById("statusText");
+    const soundToggle = document.getElementById("soundToggle");
+
+    let timers = [];
+    let intervalId = null;
+    let windowTimeout = null;
+    let running = false;
+    let phase = "idle";
+    let cyclesLeft = 0;
+    let inhaleLeft = 0;
+    let exhaleLeft = 0;
+    let alertActive = false;
+    let alertInterval = null;
+    let windowAcknowledged = false;
+    const windowDuration = 1500;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const ensureAudio = () => {
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+    };
+
+    const playBeep = () => {
+      if (!soundToggle.checked || audioCtx.state === "suspended") {
+        return;
+      }
+      const oscillator = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = 520;
+      gain.gain.value = 0.2;
+      oscillator.connect(gain);
+      gain.connect(audioCtx.destination);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.25);
+    };
+
+    const startAlert = () => {
+      if (alertActive) {
+        return;
+      }
+      alertActive = true;
+      statusText.textContent = "Нет клика в окно — тревога";
+      statusText.classList.add("alert");
+      playBeep();
+      alertInterval = setInterval(playBeep, 1200);
+    };
+
+    const stopAlert = () => {
+      alertActive = false;
+      statusText.classList.remove("alert");
+      if (alertInterval) {
+        clearInterval(alertInterval);
+        alertInterval = null;
+      }
+    };
+
+    const setPhaseLabel = (text) => {
+      phaseLabel.textContent = text;
+    };
+
+    const clearTimers = () => {
+      timers.forEach((timer) => clearTimeout(timer));
+      timers = [];
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+      if (windowTimeout) {
+        clearTimeout(windowTimeout);
+        windowTimeout = null;
+      }
+    };
+
+    const resetDisplay = () => {
+      inhaleRemaining.textContent = "— сек";
+      exhaleRemaining.textContent = "— сек";
+      cycleRemaining.textContent = "—";
+      statusText.textContent = "Ожидание старта";
+      setPhaseLabel("Готовы начать");
+      circle.style.transitionDuration = "0.6s";
+      circle.style.transform = "scale(0.6)";
+    };
+
+    const updateCountdown = () => {
+      inhaleRemaining.textContent = inhaleLeft ? `${inhaleLeft} сек` : "— сек";
+      exhaleRemaining.textContent = exhaleLeft ? `${exhaleLeft} сек` : "— сек";
+      cycleRemaining.textContent = cyclesLeft ? cyclesLeft : "—";
+    };
+
+    const startInterval = () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+      intervalId = setInterval(() => {
+        if (phase === "inhale") {
+          inhaleLeft = Math.max(inhaleLeft - 1, 0);
+        }
+        if (phase === "exhale") {
+          exhaleLeft = Math.max(exhaleLeft - 1, 0);
+        }
+        updateCountdown();
+      }, 1000);
+    };
+
+    const startInhale = () => {
+      phase = "inhale";
+      inhaleLeft = getInhale();
+      exhaleLeft = 0;
+      setPhaseLabel("Вдох");
+      statusText.textContent = "Вдох";
+      circle.style.transitionDuration = `${inhaleLeft}s`;
+      circle.style.transform = "scale(1)";
+      updateCountdown();
+      startInterval();
+      timers.push(setTimeout(() => startWindow("exhale"), inhaleLeft * 1000));
+    };
+
+    const startExhale = () => {
+      phase = "exhale";
+      exhaleLeft = getExhale();
+      inhaleLeft = 0;
+      setPhaseLabel("Выдох");
+      statusText.textContent = "Выдох";
+      circle.style.transitionDuration = `${exhaleLeft}s`;
+      circle.style.transform = "scale(0.6)";
+      updateCountdown();
+      startInterval();
+      timers.push(setTimeout(() => startWindow("inhale"), exhaleLeft * 1000));
+    };
+
+    const startWindow = (nextPhase) => {
+      phase = "window";
+      inhaleLeft = 0;
+      exhaleLeft = 0;
+      windowAcknowledged = false;
+      setPhaseLabel("Окно клика");
+      statusText.textContent = "Окно клика";
+      updateCountdown();
+      stopAlert();
+
+      if (nextPhase === "inhale") {
+        cyclesLeft = Math.max(cyclesLeft - 1, 0);
+        updateCountdown();
+        if (cyclesLeft === 0) {
+          stopSession();
+          return;
+        }
+      }
+
+      windowTimeout = setTimeout(() => {
+        if (!alertActive && !windowAcknowledged) {
+          startAlert();
+        }
+      }, windowDuration);
+
+      timers.push(setTimeout(() => {
+        if (nextPhase === "inhale") {
+          startInhale();
+        } else {
+          startExhale();
+        }
+      }, windowDuration));
+    };
+
+    const getInhale = () => Math.max(parseInt(inhaleInput.value, 10) || 4, 2);
+    const getExhale = () => Math.max(parseInt(exhaleInput.value, 10) || 7, 2);
+
+    const startSession = () => {
+      ensureAudio();
+      stopAlert();
+      clearTimers();
+      running = true;
+      cyclesLeft = parseInt(cycleInput.value, 10) || 10;
+      cycleRemaining.textContent = cyclesLeft;
+      startButton.textContent = "Reset";
+      startInhale();
+    };
+
+    const stopSession = () => {
+      running = false;
+      clearTimers();
+      stopAlert();
+      startButton.textContent = "Start";
+      resetDisplay();
+    };
+
+    cycleInput.addEventListener("input", () => {
+      cycleValue.textContent = cycleInput.value;
+      if (!running) {
+        cycleRemaining.textContent = cycleInput.value;
+      }
+    });
+
+    startButton.addEventListener("click", () => {
+      if (running) {
+        stopSession();
+      } else {
+        startSession();
+      }
+    });
+
+    circle.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      ensureAudio();
+      if (phase !== "window") {
+        return;
+      }
+      windowAcknowledged = true;
+      stopAlert();
+      clearTimers();
+      circle.style.transitionDuration = "0.4s";
+      circle.style.transform = "scale(0.6)";
+      statusText.textContent = "Синхронизация";
+      timers.push(setTimeout(startInhale, 250));
+    });
+
+    circle.addEventListener("click", () => {
+      ensureAudio();
+      if (phase === "window") {
+        windowAcknowledged = true;
+        stopAlert();
+        statusText.textContent = "Клик подтверждён";
+        return;
+      }
+      if (alertActive) {
+        stopAlert();
+        statusText.textContent = "Возврат подтверждён";
+      }
+    });
+
+    circle.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        circle.click();
+      }
+    });
+
+    soundToggle.addEventListener("change", () => {
+      if (!soundToggle.checked) {
+        stopAlert();
+      }
+    });
+
+    window.addEventListener("load", () => {
+      cycleValue.textContent = cycleInput.value;
+      cycleRemaining.textContent = cycleInput.value;
+      resetDisplay();
+    });
+  </script>
+</body>
+</html>
