@@ -408,24 +408,21 @@
     };
 
     const stopPhaseSound = () => {
-      const oscToStop = phaseOsc;
-      const gainToStop = phaseGain;
-      phaseOsc = null;
-      phaseGain = null;
-
-      if (gainToStop && oscToStop) {
+      if (phaseGain && phaseOsc) {
         const now = audioCtx.currentTime;
-        gainToStop.gain.cancelScheduledValues(now);
-        gainToStop.gain.setValueAtTime(Math.max(gainToStop.gain.value, 0.0001), now);
-        gainToStop.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
-        oscToStop.stop(now + 0.1);
+        phaseGain.gain.cancelScheduledValues(now);
+        phaseGain.gain.setValueAtTime(Math.max(phaseGain.gain.value, 0.0001), now);
+        phaseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+        phaseOsc.stop(now + 0.1);
       }
       setTimeout(() => {
-        if (oscToStop) {
-          oscToStop.disconnect();
+        if (phaseOsc) {
+          phaseOsc.disconnect();
+          phaseOsc = null;
         }
-        if (gainToStop) {
-          gainToStop.disconnect();
+        if (phaseGain) {
+          phaseGain.disconnect();
+          phaseGain = null;
         }
       }, 150);
     };
@@ -449,14 +446,14 @@
         phaseOsc.frequency.setValueAtTime(170, now);
         phaseOsc.frequency.exponentialRampToValueAtTime(300, tailPoint);
         phaseOsc.frequency.linearRampToValueAtTime(275, end);
-        phaseGain.gain.exponentialRampToValueAtTime(0.028, now + duration * 0.65);
-        phaseGain.gain.linearRampToValueAtTime(0.014, end);
+        phaseGain.gain.exponentialRampToValueAtTime(0.012, now + duration * 0.65);
+        phaseGain.gain.linearRampToValueAtTime(0.007, end);
       } else {
         phaseOsc.frequency.setValueAtTime(280, now);
         phaseOsc.frequency.exponentialRampToValueAtTime(180, tailPoint);
         phaseOsc.frequency.linearRampToValueAtTime(165, end);
-        phaseGain.gain.exponentialRampToValueAtTime(0.024, now + duration * 0.55);
-        phaseGain.gain.linearRampToValueAtTime(0.012, end);
+        phaseGain.gain.exponentialRampToValueAtTime(0.01, now + duration * 0.55);
+        phaseGain.gain.linearRampToValueAtTime(0.006, end);
       }
 
       phaseOsc.connect(phaseGain);
