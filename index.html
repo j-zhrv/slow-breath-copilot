@@ -12,12 +12,11 @@
       --text: #e6e8ee;
       --accent: #6bc2ff;
       --muted: #9aa3b2;
-      --danger: #ff6b6b;
+      --active: #8be6b0;
+      --ring: rgba(255, 255, 255, 0.16);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -25,21 +24,70 @@
       font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
       background: radial-gradient(circle at top, #1b202a, var(--bg));
       color: var(--text);
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-rows: 1fr auto;
       align-items: center;
-      justify-content: center;
-      gap: 24px;
-      padding: 24px;
+      justify-items: center;
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .breath-visual {
+      width: min(78vmin, 780px);
+      height: min(78vmin, 780px);
+      min-width: 290px;
+      min-height: 290px;
+      max-width: 92vw;
+      max-height: 72vh;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .boundary-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px dashed var(--ring);
+      pointer-events: none;
+    }
+
+    .boundary-ring.outer {
+      width: 100%;
+      height: 100%;
+    }
+
+    .boundary-ring.inner {
+      width: 58%;
+      height: 58%;
+    }
+
+    .boundary-label {
+      position: absolute;
+      font-size: 0.75rem;
+      color: var(--muted);
+      pointer-events: none;
+      background: rgba(9, 12, 20, 0.7);
+      border-radius: 10px;
+      padding: 4px 8px;
+    }
+
+    .boundary-label.outer { top: 4px; }
+    .boundary-label.inner { bottom: 18%; }
+
+    .progress-ring {
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      background: conic-gradient(var(--active) calc(var(--progress, 0) * 1%), rgba(255,255,255,0.08) 0%);
+      -webkit-mask: radial-gradient(circle, transparent 70%, #000 71%);
+      mask: radial-gradient(circle, transparent 70%, #000 71%);
+      pointer-events: none;
+      transition: background 0.2s linear;
     }
 
     .breath-circle {
-      width: 50vmin;
-      height: 50vmin;
-      min-width: 220px;
-      min-height: 220px;
-      max-width: 520px;
-      max-height: 520px;
+      width: 58%;
+      height: 58%;
       border-radius: 50%;
       background: radial-gradient(circle at 35% 35%, #7bd6ff, #3e7bd8);
       box-shadow: 0 25px 60px rgba(35, 126, 255, 0.35);
@@ -47,73 +95,78 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transform: scale(0.6);
-      transition: transform 4s linear;
+      transform: scale(0.62);
+      transition: transform 0.8s linear;
       position: relative;
       outline: none;
       border: 3px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .breath-circle:focus-visible {
-      box-shadow: 0 0 0 4px rgba(107, 194, 255, 0.4);
-    }
-
-    .circle-label {
-      font-size: clamp(1rem, 2.2vmin, 1.5rem);
-      color: rgba(255, 255, 255, 0.85);
+      z-index: 3;
       text-align: center;
       padding: 12px;
     }
 
+    .circle-label {
+      font-size: clamp(1rem, 2.8vmin, 1.75rem);
+      color: rgba(255, 255, 255, 0.92);
+      line-height: 1.35;
+    }
+
     .panel {
-      width: min(720px, 100%);
+      width: min(920px, 100%);
       background: var(--panel);
       border-radius: 16px;
-      padding: 20px;
+      padding: 14px;
       display: grid;
-      gap: 16px;
+      gap: 12px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
     }
 
-    .controls {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
-      align-items: end;
-    }
-
-    label {
-      font-size: 0.85rem;
+    .group-title {
+      margin: 0 0 6px;
       color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .chip-row {
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
-    input[type="number"],
-    input[type="range"] {
-      width: 100%;
-    }
-
-    input[type="number"] {
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #2b3240;
-      background: #11151c;
+    .chip {
+      border: 1px solid #2f3746;
+      background: #141922;
       color: var(--text);
-      font-size: 1rem;
+      padding: 8px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.93rem;
     }
 
-    input[type="range"] {
-      accent-color: var(--accent);
+    .chip.active {
+      border-color: var(--accent);
+      background: rgba(107, 194, 255, 0.2);
+      color: #dff4ff;
     }
 
-    .range-value {
-      font-weight: 600;
-      color: var(--text);
+    .main-controls {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr auto;
+      align-items: center;
     }
 
-    button {
+    .session-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .session-meta strong { color: var(--text); }
+
+    button#startButton {
       padding: 10px 16px;
       border-radius: 10px;
       border: none;
@@ -122,389 +175,320 @@
       cursor: pointer;
       background: var(--accent);
       color: #0a1020;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 20px rgba(107, 194, 255, 0.2);
-    }
-
-    button:active {
-      transform: translateY(0);
-    }
-
-    .indicators {
-      display: grid;
-      gap: 8px;
-      font-size: 1rem;
-      color: var(--text);
-    }
-
-    .indicator {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .indicator span {
-      color: var(--muted);
-      font-size: 0.85rem;
-    }
-
-    .alert {
-      color: var(--danger);
-      font-weight: 600;
     }
 
     .toggle {
       display: inline-flex;
       gap: 8px;
       align-items: center;
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       color: var(--muted);
     }
 
-    .instructions {
-      font-size: 0.85rem;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-
-    @media (max-width: 640px) {
-      body {
-        padding: 16px;
-      }
+    @media (max-width: 760px) {
+      .main-controls { grid-template-columns: 1fr; }
+      .breath-visual { width: 88vmin; height: 88vmin; }
     }
   </style>
 </head>
 <body>
-  <div
-    id="breathCircle"
-    class="breath-circle"
-    role="button"
-    tabindex="0"
-    aria-label="Круг дыхания: правый клик для синхронизации, левый для подтверждения присутствия"
-  >
-    <div class="circle-label" id="phaseLabel">Готовы начать</div>
-  </div>
+  <section class="breath-visual" aria-live="polite">
+    <div class="boundary-ring outer" aria-hidden="true"></div>
+    <div class="boundary-ring inner" aria-hidden="true"></div>
+    <div class="boundary-label outer">Граница конца вдоха</div>
+    <div class="boundary-label inner">Граница конца выдоха</div>
+    <div id="progressRing" class="progress-ring" aria-hidden="true"></div>
 
-  <section class="panel" aria-live="polite">
-    <div class="controls">
-      <label>
-        Секунды вдоха
-        <input id="inhaleInput" type="number" min="2" max="20" step="1" value="4" />
-      </label>
-      <label>
-        Секунды выдоха
-        <input id="exhaleInput" type="number" min="2" max="20" step="1" value="7" />
-      </label>
-      <label>
-        Кол-во циклов: <span class="range-value" id="cycleValue">10</span>
-        <input id="cycleInput" type="range" min="5" max="30" step="5" value="10" />
-      </label>
-      <div>
-        <button id="startButton" type="button">Start</button>
-      </div>
+    <div
+      id="breathCircle"
+      class="breath-circle"
+      role="button"
+      tabindex="0"
+      aria-label="Круг дыхания: нажмите чтобы начать или подтвердить присутствие"
+    >
+      <div class="circle-label" id="phaseLabel">Выберите режим и нажмите Start</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div>
+      <p class="group-title">Режим дыхания</p>
+      <div class="chip-row" id="modeChips"></div>
     </div>
 
-    <div class="indicators">
-      <div class="indicator">
-        <strong>Вдох: осталось</strong>
-        <span id="inhaleRemaining">— сек</span>
+    <div>
+      <p class="group-title">Количество циклов</p>
+      <div class="chip-row" id="cycleChips"></div>
+    </div>
+
+    <div class="main-controls">
+      <div class="session-meta">
+        <div>Режим: <strong id="modeSummary">—</strong></div>
+        <div>Циклов: <strong id="cycleSummary">—</strong></div>
+        <div>Длительность: <strong id="durationSummary">—</strong></div>
+        <div>Осталось: <strong id="remainingSummary">—</strong></div>
       </div>
-      <div class="indicator">
-        <strong>Выдох: осталось</strong>
-        <span id="exhaleRemaining">— сек</span>
-      </div>
-      <div class="indicator">
-        <strong>Осталось циклов</strong>
-        <span id="cycleRemaining">—</span>
-      </div>
-      <div class="indicator">
-        <strong>Статус</strong>
-        <span id="statusText">Ожидание старта</span>
-      </div>
+      <button id="startButton" type="button">Start</button>
     </div>
 
     <div class="toggle">
       <input id="soundToggle" type="checkbox" checked />
-      <label for="soundToggle">Звук напоминания</label>
-    </div>
-
-    <div class="instructions">
-      Кликайте по кругу только в «окнах» между фазами. Правый клик синхронизирует цикл и
-      запускает вдох заново. Левый клик отключает тревогу, если вы отвлеклись.
+      <label for="soundToggle">Мягкий звук, если отвлеклись</label>
     </div>
   </section>
 
   <script>
-    const circle = document.getElementById("breathCircle");
-    const phaseLabel = document.getElementById("phaseLabel");
-    const inhaleInput = document.getElementById("inhaleInput");
-    const exhaleInput = document.getElementById("exhaleInput");
-    const cycleInput = document.getElementById("cycleInput");
-    const cycleValue = document.getElementById("cycleValue");
-    const startButton = document.getElementById("startButton");
-    const inhaleRemaining = document.getElementById("inhaleRemaining");
-    const exhaleRemaining = document.getElementById("exhaleRemaining");
-    const cycleRemaining = document.getElementById("cycleRemaining");
-    const statusText = document.getElementById("statusText");
-    const soundToggle = document.getElementById("soundToggle");
+    const BREATH_MODES = [
+      { id: '478', name: '4 вдох / 7 выдох', phases: [
+        { key: 'inhale', label: 'Вдох', seconds: 4, scale: 1 },
+        { key: 'exhale', label: 'Выдох', seconds: 7, scale: 0.62 }
+      ]},
+      { id: 'box', name: 'Box 4-4-4-4', phases: [
+        { key: 'inhale', label: 'Вдох', seconds: 4, scale: 1 },
+        { key: 'hold', label: 'Задержка', seconds: 4, scale: 1 },
+        { key: 'exhale', label: 'Выдох', seconds: 4, scale: 0.62 },
+        { key: 'hold', label: 'Задержка', seconds: 4, scale: 0.62 }
+      ]},
+      { id: 'calm46', name: '4 вдох / 6 выдох', phases: [
+        { key: 'inhale', label: 'Вдох', seconds: 4, scale: 1 },
+        { key: 'exhale', label: 'Выдох', seconds: 6, scale: 0.62 }
+      ]},
+      { id: 'equal55', name: '5 вдох / 5 выдох', phases: [
+        { key: 'inhale', label: 'Вдох', seconds: 5, scale: 1 },
+        { key: 'exhale', label: 'Выдох', seconds: 5, scale: 0.62 }
+      ]}
+    ];
+    const CYCLE_PRESETS = [8, 12, 20, 30, 40, 60];
 
-    let timers = [];
-    let intervalId = null;
-    let windowTimeout = null;
+    const modeChips = document.getElementById('modeChips');
+    const cycleChips = document.getElementById('cycleChips');
+    const startButton = document.getElementById('startButton');
+    const soundToggle = document.getElementById('soundToggle');
+    const phaseLabel = document.getElementById('phaseLabel');
+    const breathCircle = document.getElementById('breathCircle');
+    const progressRing = document.getElementById('progressRing');
+
+    const modeSummary = document.getElementById('modeSummary');
+    const cycleSummary = document.getElementById('cycleSummary');
+    const durationSummary = document.getElementById('durationSummary');
+    const remainingSummary = document.getElementById('remainingSummary');
+
+    let selectedMode = BREATH_MODES[0];
+    let selectedCycles = 20;
+
     let running = false;
-    let phase = "idle";
-    let cyclesLeft = 0;
-    let inhaleLeft = 0;
-    let exhaleLeft = 0;
-    let alertActive = false;
-    let alertInterval = null;
-    let windowAcknowledged = false;
-    const windowDuration = 1500;
+    let phaseIndex = 0;
+    let cycleIndex = 1;
+    let phaseStartedAt = 0;
+    let phaseDuration = 0;
+    let phaseTimer = null;
+    let tickTimer = null;
+
+    let inactivityTimeout = null;
+    const inactivityMs = 25000;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let ambientOsc = null;
+    let ambientGain = null;
 
     const ensureAudio = () => {
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume();
-      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
     };
 
-    const playBeep = () => {
-      if (!soundToggle.checked || audioCtx.state === "suspended") {
-        return;
-      }
-      const oscillator = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      oscillator.type = "sine";
-      oscillator.frequency.value = 520;
-      gain.gain.value = 0.2;
-      oscillator.connect(gain);
-      gain.connect(audioCtx.destination);
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.25);
+    const startAmbientAlert = () => {
+      if (!soundToggle.checked || ambientOsc) return;
+      ensureAudio();
+      ambientOsc = audioCtx.createOscillator();
+      ambientGain = audioCtx.createGain();
+      ambientOsc.type = 'sine';
+      ambientOsc.frequency.value = 196;
+      ambientGain.gain.value = 0.0001;
+      ambientOsc.connect(ambientGain);
+      ambientGain.connect(audioCtx.destination);
+      ambientOsc.start();
+      ambientGain.gain.exponentialRampToValueAtTime(0.025, audioCtx.currentTime + 0.8);
     };
 
-    const startAlert = () => {
-      if (alertActive) {
-        return;
-      }
-      alertActive = true;
-      statusText.textContent = "Нет клика в окно — тревога";
-      statusText.classList.add("alert");
-      playBeep();
-      alertInterval = setInterval(playBeep, 1200);
+    const stopAmbientAlert = () => {
+      if (!ambientOsc || !ambientGain) return;
+      ambientGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+      const osc = ambientOsc;
+      setTimeout(() => {
+        try { osc.stop(); } catch (_) {}
+      }, 650);
+      ambientOsc = null;
+      ambientGain = null;
     };
 
-    const stopAlert = () => {
-      alertActive = false;
-      statusText.classList.remove("alert");
-      if (alertInterval) {
-        clearInterval(alertInterval);
-        alertInterval = null;
-      }
+    const formatDuration = (seconds) => {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m}:${String(s).padStart(2, '0')}`;
     };
 
-    const setPhaseLabel = (text) => {
-      phaseLabel.textContent = text;
+    const cycleDuration = () => selectedMode.phases.reduce((sum, p) => sum + p.seconds, 0);
+    const sessionDuration = () => cycleDuration() * selectedCycles;
+
+    const updateSummary = () => {
+      modeSummary.textContent = selectedMode.name;
+      cycleSummary.textContent = String(selectedCycles);
+      durationSummary.textContent = formatDuration(sessionDuration());
+      if (!running) remainingSummary.textContent = formatDuration(sessionDuration());
+    };
+
+    const renderChips = () => {
+      modeChips.innerHTML = '';
+      BREATH_MODES.forEach((mode) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = `chip${mode.id === selectedMode.id ? ' active' : ''}`;
+        chip.textContent = mode.name;
+        chip.addEventListener('click', () => {
+          if (running) return;
+          selectedMode = mode;
+          renderChips();
+          updateSummary();
+        });
+        modeChips.appendChild(chip);
+      });
+
+      cycleChips.innerHTML = '';
+      CYCLE_PRESETS.forEach((cycles) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = `chip${cycles === selectedCycles ? ' active' : ''}`;
+        chip.textContent = String(cycles);
+        chip.addEventListener('click', () => {
+          if (running) return;
+          selectedCycles = cycles;
+          renderChips();
+          updateSummary();
+        });
+        cycleChips.appendChild(chip);
+      });
     };
 
     const clearTimers = () => {
-      timers.forEach((timer) => clearTimeout(timer));
-      timers = [];
-      if (intervalId) {
-        clearInterval(intervalId);
-        intervalId = null;
-      }
-      if (windowTimeout) {
-        clearTimeout(windowTimeout);
-        windowTimeout = null;
-      }
+      if (phaseTimer) clearTimeout(phaseTimer);
+      if (tickTimer) clearInterval(tickTimer);
+      if (inactivityTimeout) clearTimeout(inactivityTimeout);
+      phaseTimer = null;
+      tickTimer = null;
+      inactivityTimeout = null;
     };
 
-    const resetDisplay = () => {
-      inhaleRemaining.textContent = "— сек";
-      exhaleRemaining.textContent = "— сек";
-      cycleRemaining.textContent = "—";
-      statusText.textContent = "Ожидание старта";
-      setPhaseLabel("Готовы начать");
-      circle.style.transitionDuration = "0.6s";
-      circle.style.transform = "scale(0.6)";
+    const resetInactivityWatch = () => {
+      if (!running) return;
+      if (inactivityTimeout) clearTimeout(inactivityTimeout);
+      inactivityTimeout = setTimeout(() => {
+        startAmbientAlert();
+      }, inactivityMs);
     };
 
-    const updateCountdown = () => {
-      inhaleRemaining.textContent = inhaleLeft ? `${inhaleLeft} сек` : "— сек";
-      exhaleRemaining.textContent = exhaleLeft ? `${exhaleLeft} сек` : "— сек";
-      cycleRemaining.textContent = cyclesLeft ? cyclesLeft : "—";
-    };
+    const updateRemaining = () => {
+      if (!running) return;
+      const elapsedCycles = cycleIndex - 1;
+      const cycleDoneSeconds = selectedMode.phases
+        .slice(0, phaseIndex)
+        .reduce((sum, p) => sum + p.seconds, 0);
+      const elapsedCurrent = Math.min((Date.now() - phaseStartedAt) / 1000, phaseDuration);
+      const elapsed = elapsedCycles * cycleDuration() + cycleDoneSeconds + elapsedCurrent;
+      const left = Math.max(sessionDuration() - elapsed, 0);
+      remainingSummary.textContent = formatDuration(left);
 
-    const startInterval = () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-      intervalId = setInterval(() => {
-        if (phase === "inhale") {
-          inhaleLeft = Math.max(inhaleLeft - 1, 0);
-        }
-        if (phase === "exhale") {
-          exhaleLeft = Math.max(exhaleLeft - 1, 0);
-        }
-        updateCountdown();
-      }, 1000);
-    };
-
-    const startInhale = () => {
-      phase = "inhale";
-      inhaleLeft = getInhale();
-      exhaleLeft = 0;
-      setPhaseLabel("Вдох");
-      statusText.textContent = "Вдох";
-      circle.style.transitionDuration = `${inhaleLeft}s`;
-      circle.style.transform = "scale(1)";
-      updateCountdown();
-      startInterval();
-      timers.push(setTimeout(() => startWindow("exhale"), inhaleLeft * 1000));
-    };
-
-    const startExhale = () => {
-      phase = "exhale";
-      exhaleLeft = getExhale();
-      inhaleLeft = 0;
-      setPhaseLabel("Выдох");
-      statusText.textContent = "Выдох";
-      circle.style.transitionDuration = `${exhaleLeft}s`;
-      circle.style.transform = "scale(0.6)";
-      updateCountdown();
-      startInterval();
-      timers.push(setTimeout(() => startWindow("inhale"), exhaleLeft * 1000));
-    };
-
-    const startWindow = (nextPhase) => {
-      phase = "window";
-      inhaleLeft = 0;
-      exhaleLeft = 0;
-      windowAcknowledged = false;
-      setPhaseLabel("Окно клика");
-      statusText.textContent = "Окно клика";
-      updateCountdown();
-      stopAlert();
-
-      if (nextPhase === "inhale") {
-        cyclesLeft = Math.max(cyclesLeft - 1, 0);
-        updateCountdown();
-        if (cyclesLeft === 0) {
-          stopSession();
-          return;
-        }
-      }
-
-      windowTimeout = setTimeout(() => {
-        if (!alertActive && !windowAcknowledged) {
-          startAlert();
-        }
-      }, windowDuration);
-
-      timers.push(setTimeout(() => {
-        if (nextPhase === "inhale") {
-          startInhale();
-        } else {
-          startExhale();
-        }
-      }, windowDuration));
-    };
-
-    const getInhale = () => Math.max(parseInt(inhaleInput.value, 10) || 4, 2);
-    const getExhale = () => Math.max(parseInt(exhaleInput.value, 10) || 7, 2);
-
-    const startSession = () => {
-      ensureAudio();
-      stopAlert();
-      clearTimers();
-      running = true;
-      cyclesLeft = parseInt(cycleInput.value, 10) || 10;
-      cycleRemaining.textContent = cyclesLeft;
-      startButton.textContent = "Reset";
-      startInhale();
+      const progress = Math.min((elapsedCurrent / phaseDuration) * 100, 100);
+      progressRing.style.setProperty('--progress', progress.toFixed(2));
+      phaseLabel.textContent = `${selectedMode.phases[phaseIndex].label} · ${Math.ceil(phaseDuration - elapsedCurrent)}с`;
     };
 
     const stopSession = () => {
       running = false;
       clearTimers();
-      stopAlert();
-      startButton.textContent = "Start";
-      resetDisplay();
+      stopAmbientAlert();
+      startButton.textContent = 'Start';
+      phaseLabel.textContent = 'Выберите режим и нажмите Start';
+      breathCircle.style.transform = 'scale(0.62)';
+      progressRing.style.setProperty('--progress', 0);
+      updateSummary();
     };
 
-    cycleInput.addEventListener("input", () => {
-      cycleValue.textContent = cycleInput.value;
-      if (!running) {
-        cycleRemaining.textContent = cycleInput.value;
+    const nextPhase = () => {
+      if (!running) return;
+      phaseIndex += 1;
+      if (phaseIndex >= selectedMode.phases.length) {
+        phaseIndex = 0;
+        cycleIndex += 1;
+        if (cycleIndex > selectedCycles) {
+          stopSession();
+          return;
+        }
       }
-    });
 
-    startButton.addEventListener("click", () => {
-      if (running) {
-        stopSession();
-      } else {
-        startSession();
-      }
-    });
+      const phase = selectedMode.phases[phaseIndex];
+      phaseDuration = phase.seconds;
+      phaseStartedAt = Date.now();
+      breathCircle.style.transitionDuration = `${phaseDuration}s`;
+      breathCircle.style.transform = `scale(${phase.scale})`;
+      updateRemaining();
+      phaseTimer = setTimeout(nextPhase, phaseDuration * 1000);
+    };
 
-    circle.addEventListener("contextmenu", (event) => {
-      event.preventDefault();
+    const startSession = () => {
       ensureAudio();
-      windowAcknowledged = true;
-      stopAlert();
+      stopAmbientAlert();
       clearTimers();
-      if (!running) {
-        running = true;
-        cyclesLeft = parseInt(cycleInput.value, 10) || 10;
-        cycleRemaining.textContent = cyclesLeft;
-        startButton.textContent = "Reset";
-      }
-      circle.style.transitionDuration = "0.3s";
-      circle.style.transform = "scale(0.6)";
-      statusText.textContent = "Синхронизация";
-      timers.push(setTimeout(startInhale, 250));
+
+      running = true;
+      phaseIndex = 0;
+      cycleIndex = 1;
+      startButton.textContent = 'Reset';
+
+      const phase = selectedMode.phases[0];
+      phaseDuration = phase.seconds;
+      phaseStartedAt = Date.now();
+      breathCircle.style.transitionDuration = `${phaseDuration}s`;
+      breathCircle.style.transform = `scale(${phase.scale})`;
+
+      updateRemaining();
+      tickTimer = setInterval(updateRemaining, 200);
+      phaseTimer = setTimeout(nextPhase, phaseDuration * 1000);
+      resetInactivityWatch();
+    };
+
+    const acknowledgePresence = () => {
+      stopAmbientAlert();
+      resetInactivityWatch();
+    };
+
+    startButton.addEventListener('click', () => {
+      if (running) stopSession();
+      else startSession();
     });
 
-    circle.addEventListener("click", () => {
-      ensureAudio();
-      if (phase === "window") {
-        windowAcknowledged = true;
-        stopAlert();
-        statusText.textContent = "Клик подтверждён";
-        return;
-      }
-      if (alertActive) {
-        stopAlert();
-        statusText.textContent = "Возврат подтверждён";
-      }
+    breathCircle.addEventListener('click', () => {
+      if (!running) startSession();
+      else acknowledgePresence();
     });
 
-    circle.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
+    breathCircle.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        circle.click();
+        breathCircle.click();
       }
     });
 
-    soundToggle.addEventListener("change", () => {
-      if (!soundToggle.checked) {
-        stopAlert();
-      }
+    ['mousemove', 'keydown', 'touchstart'].forEach((evt) => {
+      window.addEventListener(evt, acknowledgePresence, { passive: true });
     });
 
-    window.addEventListener("load", () => {
-      cycleValue.textContent = cycleInput.value;
-      cycleRemaining.textContent = cycleInput.value;
-      resetDisplay();
+    soundToggle.addEventListener('change', () => {
+      if (!soundToggle.checked) stopAmbientAlert();
+    });
+
+    window.addEventListener('load', () => {
+      renderChips();
+      updateSummary();
+      progressRing.style.setProperty('--progress', 0);
     });
   </script>
 </body>
