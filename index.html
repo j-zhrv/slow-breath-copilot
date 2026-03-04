@@ -32,12 +32,12 @@
     }
 
     .breath-circle {
-      width: 70vmin;
-      height: 70vmin;
-      min-width: 260px;
-      min-height: 260px;
-      max-width: 760px;
-      max-height: 760px;
+      width: 48vmin;
+      height: 48vmin;
+      min-width: 200px;
+      min-height: 200px;
+      max-width: 480px;
+      max-height: 480px;
       border-radius: 50%;
       background: radial-gradient(circle at 35% 35%, #7bd6ff, #3e7bd8);
       box-shadow: 0 25px 60px rgba(35, 126, 255, 0.35);
@@ -170,7 +170,7 @@
 
     @media (max-width: 640px) {
       body { padding: 12px; }
-      .breath-circle { width: 74vmin; height: 74vmin; }
+      .breath-circle { width: 62vmin; height: 62vmin; min-width: 180px; min-height: 180px; }
     }
   </style>
 </head>
@@ -246,7 +246,7 @@
     };
 
     const MIN_VALID_HOLD_MS = 140;
-    const INACTIVITY_THRESHOLD_MS = 6000;
+    const INACTIVITY_THRESHOLD_MS = 15000;
 
     const app = {
       durationKey: "medium",
@@ -265,6 +265,7 @@
       exhaleDurationsMs: [],
       inhaleCount: 0,
       exhaleCount: 0,
+      lastSessionElapsedMs: 0,
     };
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -405,6 +406,11 @@
     };
 
     const stopSession = () => {
+      const now = performance.now();
+      const elapsedMs = app.sessionStartMs == null
+        ? 0
+        : Math.max(0, Math.min(getSessionDurationMs(), now - app.sessionStartMs));
+      app.lastSessionElapsedMs = elapsedMs;
       app.running = false;
       if (app.tickRaf) {
         cancelAnimationFrame(app.tickRaf);
@@ -417,16 +423,16 @@
       const inhaleAvgMs = avg(app.inhaleDurationsMs);
       const exhaleAvgMs = avg(app.exhaleDurationsMs);
       if (app.inhaleCount || app.exhaleCount) {
-        statusText.textContent = `Сессия завершена: вдохов ${app.inhaleCount}, выдохов ${app.exhaleCount}`;
+        statusText.textContent = `Сессия завершена: ${formatClock(elapsedMs)} · вдохов ${app.inhaleCount}, выдохов ${app.exhaleCount}`;
       } else {
-        statusText.textContent = "Сессия завершена";
+        statusText.textContent = `Сессия завершена: ${formatClock(elapsedMs)}`;
       }
       statusText.classList.remove("alert");
       phaseName.textContent = "Готовность";
-      phaseTime.textContent = "Нажмите «Старт»";
+      phaseTime.textContent = `Сессия: ${formatClock(elapsedMs)} · Нажмите «Старт»`;
       stateMetric.textContent = "Пауза";
-      elapsedMetric.textContent = "00:00";
-      remainingMetric.textContent = formatClock(getSessionDurationMs());
+      elapsedMetric.textContent = formatClock(elapsedMs);
+      remainingMetric.textContent = formatClock(Math.max(0, getSessionDurationMs() - elapsedMs));
       inhaleAvgMetric.textContent = inhaleAvgMs ? formatMs(inhaleAvgMs) : "—";
       exhaleAvgMetric.textContent = exhaleAvgMs ? formatMs(exhaleAvgMs) : "—";
       ratioMetric.textContent = inhaleAvgMs && exhaleAvgMs ? (exhaleAvgMs / inhaleAvgMs).toFixed(2) : "—";
@@ -448,7 +454,17 @@
 
       const phaseMap = { inhale: "Вдох", exhale: "Выдох", pause: "Пауза" };
       phaseName.textContent = phaseMap[app.currentState];
-      phaseTime.textContent = `Прошло ${formatClock(elapsed)} · Осталось ${formatClock(remaining)}`;
+      const activeHoldMs = app.inhaleActive && app.inhaleStartedAtMs != null
+        ? now - app.inhaleStartedAtMs
+        : app.exhaleActive && app.exhaleStartedAtMs != null
+          ? now - app.exhaleStartedAtMs
+          : null;
+      if (activeHoldMs != null) {
+        const holdLabel = app.inhaleActive ? "Вдох" : "Выдох";
+        phaseTime.textContent = `${holdLabel}: ${(activeHoldMs / 1000).toFixed(1)} сек`;
+      } else {
+        phaseTime.textContent = `Прошло ${formatClock(elapsed)} · Осталось ${formatClock(remaining)}`;
+      }
       stateMetric.textContent = phaseMap[app.currentState];
       elapsedMetric.textContent = formatClock(elapsed);
       remainingMetric.textContent = formatClock(remaining);
@@ -458,7 +474,10 @@
       exhaleAvgMetric.textContent = exhaleAvgMs ? formatMs(exhaleAvgMs) : "—";
       ratioMetric.textContent = inhaleAvgMs && exhaleAvgMs ? (exhaleAvgMs / inhaleAvgMs).toFixed(2) : "—";
 
-      if (app.lastActivityAtMs && now - app.lastActivityAtMs > INACTIVITY_THRESHOLD_MS) {
+      const inactivityMs = app.inhaleActive || app.exhaleActive
+        ? 0
+        : (app.lastActivityAtMs ? now - app.lastActivityAtMs : 0);
+      if (inactivityMs > INACTIVITY_THRESHOLD_MS) {
         startAlert();
         statusText.textContent = "Похоже, вы отвлеклись — мягкий сигнал включён";
         statusText.classList.add("alert");
